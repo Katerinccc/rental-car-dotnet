@@ -1,4 +1,5 @@
 ﻿using RentalCar.Domain.Abstractions;
+using RentalCar.Domain.Rentals.Events;
 using RentalCar.Domain.Vehicles;
 
 namespace RentalCar.Domain.Rentals;
@@ -37,4 +38,14 @@ public sealed class Rental : Entity
     public DateTime? RefusedDate { get; private set; }
     public DateTime? CancellationDate { get; private set; }
     public DateTime? CompletionDate { get; private set; }
+
+    public static Rental MakeReservation(Guid vehicleId, Guid userId, DateRange duration, PriceDetail priceDetail)
+    {
+        var rental = new Rental(Guid.NewGuid(), RentalStatus.Reserved, duration, vehicleId, userId,
+            priceDetail.PriceForPeriod, priceDetail.Maintenance, priceDetail.Accessories, priceDetail.TotalPrice, DateTime.Now);
+
+        rental.RaiseDomainEvents(new ReservedRentalDomainEvent(rental.Id));
+
+        return rental;
+    }
 }
